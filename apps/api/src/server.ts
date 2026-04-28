@@ -3,14 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import { z } from "zod";
-import {
-  colleges,
-  compareColleges,
-  filterColleges,
-  findCollegeBySlug,
-  formatINR,
-  paginateColleges,
-} from "@college/shared";
+import { getCollegeBySlug, getCollegeComparison, listColleges } from "./lib/college-service.js";
 
 dotenv.config();
 
@@ -42,28 +35,19 @@ app.get("/health", (_request, response) => {
   response.json({ status: "ok", service: "college-discovery-api" });
 });
 
-app.get("/colleges", (request, response) => {
+app.get("/colleges", async (request, response) => {
   const filters = searchSchema.parse(request.query);
-  const filtered = filterColleges(filters);
-  const pagination = paginateColleges(filtered, filters.page, filters.limit);
+  const result = await listColleges(filters);
 
   response.json({
-    data: pagination.items,
-    pagination: {
-      page: pagination.page,
-      limit: pagination.limit,
-      total: pagination.total,
-      totalPages: pagination.totalPages,
-    },
-    meta: {
-      results: filtered.length,
-      availableColleges: colleges.length,
-    },
+    data: result.data,
+    pagination: result.pagination,
+    meta: result.meta,
   });
 });
 
-app.get("/colleges/:slug", (request, response) => {
-  const college = findCollegeBySlug(request.params.slug);
+app.get("/colleges/:slug", async (request, response) => {
+  const college = await getCollegeBySlug(request.params.slug);
 
   if (!college) {
     response.status(404).json({ error: "College not found" });
@@ -73,14 +57,14 @@ app.get("/colleges/:slug", (request, response) => {
   response.json({
     data: {
       ...college,
-      feesLabel: formatINR(college.feesAnnual),
+      feesLabel: college.feesLabel,
     },
   });
 });
 
-app.get("/compare", (request, response) => {
+app.get("/compare", async (request, response) => {
   const { slugs } = compareSchema.parse(request.query);
-  const data = compareColleges(slugs);
+  const data = await getCollegeComparison(slugs);
 
   response.json({
     data,
