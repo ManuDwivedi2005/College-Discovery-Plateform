@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { colleges, formatINR } from "@college/shared";
-import { fetchColleges } from "@/lib/college-api";
+import { formatINR } from "@college/shared";
+import { fetchColleges, fetchCollegeLocations } from "@/lib/college-api";
 
 export const dynamic = "force-dynamic";
 
-const locationOptions = ["", ...new Set(colleges.map((college) => college.location))];
 const courseOptions = [
   "",
   "Computer Science",
@@ -14,27 +13,28 @@ const courseOptions = [
   "Mechanical",
 ];
 
-type SearchParams = Record<string, string | string[] | undefined>;
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 function toValue(input: string | string[] | undefined): string {
   return typeof input === "string" ? input : "";
 }
 
-export default async function CollegesPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function CollegesPage(props: Props) {
+  const searchParams = await props.searchParams;
   const search = toValue(searchParams.search);
   const location = toValue(searchParams.location);
   const course = toValue(searchParams.course);
   const maxFees = toValue(searchParams.maxFees);
   const page = Number(toValue(searchParams.page) || "1");
+  const limit = 6;
 
-  const response = await fetchColleges({
-    search: search || undefined,
-    location: location || undefined,
-    course: course || undefined,
-    maxFees: maxFees ? Number(maxFees) : undefined,
-    page,
-    limit: 6,
-  });
+  const [listRes, locRes] = await Promise.all([
+    fetchColleges({ search: search || undefined, location: location || undefined, course: course || undefined, maxFees: maxFees ? Number(maxFees) : undefined, page, limit }),
+    fetchCollegeLocations(),
+  ]);
+
+  const response = listRes;
+  const locationOptions = ["", ...(locRes.data || [])];
 
   const buildHref = (nextPage: number) => {
     const params = new URLSearchParams();

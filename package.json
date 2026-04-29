@@ -9,12 +9,9 @@
   "scripts": {
     "dev": "npm run dev:web",
     "dev:web": "npm --workspace apps/web run dev",
-    "dev:api": "npm --workspace apps/api run dev",
-    "lint": "npm run lint:web && npm run lint:api",
+    "lint": "npm run lint:web",
     "lint:web": "npm --workspace apps/web run lint",
-    "lint:api": "npm --workspace apps/api run lint",
-    "build": "npm run build:web && npm run build:api",
-    "build:web": "npm --workspace apps/web run build",
-    "build:api": "npm --workspace apps/api run build"
+    "build": "npm run build:web",
+    "build:web": "npm --workspace apps/web run build"
   }
 }

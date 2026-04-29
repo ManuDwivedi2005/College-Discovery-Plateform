@@ -1,33 +1,22 @@
-const featuredColleges = [
-  {
-    name: "National Institute of Technology, Trichy",
-    location: "Tiruchirappalli, Tamil Nadu",
-    fees: "₹1.8L / year",
-    rating: 4.7,
-    placement: "91%",
-    course: "B.Tech CSE",
-  },
-  {
-    name: "VIT Vellore",
-    location: "Vellore, Tamil Nadu",
-    fees: "₹2.2L / year",
-    rating: 4.5,
-    placement: "88%",
-    course: "B.Tech IT",
-  },
-  {
-    name: "SRM Institute of Science and Technology",
-    location: "Chennai, Tamil Nadu",
-    fees: "₹3.1L / year",
-    rating: 4.3,
-    placement: "84%",
-    course: "B.Tech AI",
-  },
-];
+import Link from "next/link";
+import { formatINR } from "@college/shared";
+import { CollegeSearch } from "@/components/college-search";
+import { fetchColleges, fetchCollegeOptions } from "@/lib/college-api";
 
 const filters = ["Location", "Fees", "Course"];
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [featuredRes, optionsRes] = await Promise.all([
+    fetchColleges({ limit: 3 }),
+    fetchCollegeOptions(),
+  ]);
+
+  const colleges = featuredRes.data || [];
+  const totalColleges = featuredRes.meta?.availableColleges || 0;
+  const collegeOptions = optionsRes.data || [];
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_32%),linear-gradient(180deg,#fffaf6_0%,#ffffff_38%,#f8fafc_100%)] text-slate-950">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 py-8 sm:px-10 lg:px-12">
@@ -49,7 +38,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-3 gap-3 rounded-3xl bg-slate-950 p-4 text-white shadow-lg sm:min-w-[340px]">
               <div>
-                <div className="text-2xl font-semibold">120+</div>
+                <div className="text-2xl font-semibold">{totalColleges}</div>
                 <div className="text-xs text-slate-300">Colleges</div>
               </div>
               <div>
@@ -63,15 +52,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_auto]">
-            <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <span className="text-sm font-medium text-slate-500">Search</span>
-              <input
-                aria-label="Search colleges"
-                placeholder="Search by college name"
-                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-              />
-            </label>
+          <div className="mt-8">
+            <CollegeSearch colleges={collegeOptions} />
+          </div>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_auto]">
             {filters.map((filter) => (
               <button
                 key={filter}
@@ -94,7 +79,7 @@ export default function Home() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {featuredColleges.map((college) => (
+          {colleges.map((college) => (
             <article
               key={college.name}
               className="group rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]"
@@ -119,28 +104,28 @@ export default function Home() {
               <div className="mt-5 space-y-3 text-sm text-slate-600">
                 <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-2">
                   <span>Location</span>
-                  <span className="font-medium text-slate-900">{college.location}</span>
+                  <span className="font-medium text-slate-900">{college.location}, {college.state}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-2">
                   <span>Fees</span>
-                  <span className="font-medium text-slate-900">{college.fees}</span>
+                  <span className="font-medium text-slate-900">{formatINR(college.feesAnnual)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Placement</span>
-                  <span className="font-medium text-slate-900">{college.placement}</span>
+                  <span className="font-medium text-slate-900">{college.placementRate}%</span>
                 </div>
               </div>
 
               <div className="mt-6 flex items-center justify-between gap-3">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  {college.course}
+                  {college.tags?.[0] || "B.Tech"}
                 </span>
-                <a
-                  href={`/colleges/${encodeURIComponent(college.name.toLowerCase().replaceAll(" ", "-"))}`}
+                <Link
+                  href={`/colleges/${college.slug}`}
                   className="text-sm font-semibold text-slate-950 underline decoration-amber-400 decoration-2 underline-offset-4 transition group-hover:text-amber-700"
                 >
                   View details
-                </a>
+                </Link>
               </div>
             </article>
           ))}

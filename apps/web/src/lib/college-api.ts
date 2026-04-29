@@ -67,3 +67,11 @@ export async function fetchCollege(slug: string) {
 export async function fetchComparison(slugs: string[]) {
   return requestJson<CompareResponse>(`/compare?slugs=${encodeURIComponent(slugs.join(","))}`);
 }
+
+export async function fetchCollegeOptions() {
+  return requestJson<{ data: Array<{ slug: string; name: string }> }>(`/colleges/options`);
+}
+
+export async function fetchCollegeLocations() {
+  return requestJson<{ data: string[] }>(`/colleges/locations`);
+}
