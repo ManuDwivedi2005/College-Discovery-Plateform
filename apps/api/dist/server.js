@@ -177,20 +177,33 @@ app.post("/auth/register", async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes
         await query(`INSERT INTO otps (email, otp, expires_at) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET otp = $2, expires_at = $3`, [email, otp, expiresAt]);
-        const testAccount = await nodemailer.createTestAccount();
-        const transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: { user: testAccount.user, pass: testAccount.pass },
-        });
+        let transporter;
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+            transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || "smtp.gmail.com",
+                port: Number(process.env.SMTP_PORT) || 587,
+                secure: process.env.SMTP_SECURE === "true",
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+        }
+        else {
+            const testAccount = await nodemailer.createTestAccount();
+            transporter = nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false,
+                auth: { user: testAccount.user, pass: testAccount.pass },
+            });
+        }
         const info = await transporter.sendMail({
             from: '"College Discovery" <no-reply@collegediscovery.com>',
             to: email,
             subject: "Your OTP Code",
             text: `Your OTP code is ${otp}. It expires in 10 minutes.`,
         });
-        console.log("OTP Email sent. Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        if (!process.env.SMTP_USER) {
+            console.log("OTP Email sent. Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
         res.json({ message: "OTP sent to email. Please verify." });
     }
     catch (err) {
@@ -222,6 +235,9 @@ app.post("/auth/login", async (req, res) => {
         const user = r.rows[0];
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: "Invalid credentials" });
+        }
+        if (!user.is_verified) {
+            return res.status(403).json({ error: "Please verify your email via OTP before logging in." });
         }
         const token = generateToken({ id: user.id, email: user.email, name: user.name });
         res.json({ data: { user: { id: user.id, name: user.name, email: user.email }, token } });

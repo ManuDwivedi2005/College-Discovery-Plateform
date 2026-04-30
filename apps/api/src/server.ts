@@ -252,6 +252,9 @@ app.post("/auth/login", async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+    if (!user.is_verified) {
+      return res.status(403).json({ error: "Please verify your email via OTP before logging in." });
+    }
     const token = generateToken({ id: user.id, email: user.email, name: user.name });
     res.json({ data: { user: { id: user.id, name: user.name, email: user.email }, token } });
   } catch (err: any) {

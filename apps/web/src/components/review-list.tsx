@@ -33,7 +33,7 @@ export function ReviewList({ reviews, slug }: { reviews: any[], slug: string }) 
               <div className="rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
                 {review.rating.toFixed(1)}
               </div>
-              {user && user.id === review.userId && review.id && (
+              {user && typeof user.id === 'number' && user.id === review.userId && review.id && (
                 <button onClick={() => handleDelete(review.id)} className="text-xs font-semibold text-red-600 hover:underline">
                   Delete
                 </button>
