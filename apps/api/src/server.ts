@@ -63,7 +63,7 @@ app.get("/colleges/options", async (_req, res) => {
 app.get("/colleges/locations", async (_req, res) => {
   try {
     const r = await query("SELECT DISTINCT location FROM colleges ORDER BY location");
-    const locations = r.rows.map((row) => row.location).filter(Boolean);
+    const locations = r.rows.map((row: any) => row.location).filter(Boolean);
     res.json({ data: locations });
   } catch (e) {
     console.error(e);
@@ -108,7 +108,7 @@ app.get("/colleges", async (req, res) => {
     const totalPages = Math.ceil(total / lim);
     const allCollegesRes = await query(`SELECT COUNT(*)::int as total FROM colleges`);
     const availableColleges = Number(allCollegesRes.rows[0]?.total || 0);
-    const rows = listRes.rows.map((r) => toCamel(r));
+    const rows = listRes.rows.map((r: any) => toCamel(r));
     res.json({ data: rows, meta: { results: listRes.rowCount, total, availableColleges }, pagination: { page: pageNum, limit: lim, total, totalPages } });
   } catch (err) {
     console.error(err);
@@ -128,7 +128,7 @@ app.get("/colleges/:slug", async (req, res) => {
       query(`SELECT author, role, rating, year, comment FROM reviews WHERE college_id = $1`, [college.id]),
     ]);
     const mapped = toCamel(college);
-    mapped.courses = coursesRes.rows.map((c) => toCamel(c));
+    mapped.courses = coursesRes.rows.map((c: any) => toCamel(c));
     mapped.reviews = reviewsRes.rows;
     res.json({ data: mapped });
   } catch (err) {
@@ -146,7 +146,7 @@ app.get("/compare", async (req, res) => {
     const placeholders = slugs.map((_, i) => `$${i + 1}`).join(",");
     const sql = `SELECT * FROM colleges WHERE slug IN (${placeholders})`;
     const resCols = await query(sql, slugs);
-    const rows = resCols.rows.map((r) => toCamel(r));
+    const rows = resCols.rows.map((r: any) => toCamel(r));
     res.json({ data: rows });
   } catch (err) {
     console.error(err);

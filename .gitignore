@@ -18,6 +18,9 @@ apps/web/node_modules
 # production
 /build
 
+# local deployment notes
+guideline.md
+
 # misc
 .DS_Store
 *.pem
