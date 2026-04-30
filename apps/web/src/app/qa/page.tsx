@@ -135,7 +135,7 @@ export default function QAPage() {
                   <p className="mt-2 text-sm text-slate-700">{q.content}</p>
                   <p className="mt-3 text-xs font-medium text-slate-500">Asked by {q.authorName}</p>
                 </div>
-                {user && typeof user.id === 'number' && user.id === q.userId && (
+                {user && user.id != null && q.userId != null && Number(user.id) === Number(q.userId) && (
                   <button onClick={() => handleDeleteQuestion(q.id)} className="text-xs font-semibold text-red-600 hover:underline">
                     Delete
                   </button>
@@ -153,7 +153,7 @@ export default function QAPage() {
                             <p className="text-sm text-slate-800">{a.content}</p>
                             <p className="mt-1 text-xs text-slate-500">— {a.authorName}</p>
                           </div>
-                          {user && typeof user.id === 'number' && user.id === a.userId && (
+                          {user && user.id != null && a.userId != null && Number(user.id) === Number(a.userId) && (
                             <button onClick={() => handleDeleteAnswer(a.id)} className="text-xs font-semibold text-red-600 hover:underline">
                               Delete
                             </button>
