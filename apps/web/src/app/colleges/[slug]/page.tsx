@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchCollege } from "@/lib/college-api";
 import { formatINR } from "@college/shared";
+import { ReviewForm } from "@/components/review-form";
+import { ReviewList } from "@/components/review-list";
 
 export const dynamic = "force-dynamic";
 
@@ -106,22 +108,8 @@ export default async function CollegeDetailPage({ params }: PageProps) {
 
             <section className="mt-8 rounded-[1.5rem] border border-slate-200 p-5">
               <h2 className="text-xl font-semibold text-slate-950">Reviews</h2>
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                {college.reviews.map((review) => (
-                  <article key={`${review.author}-${review.year}`} className="rounded-2xl bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="font-medium text-slate-950">{review.author}</div>
-                        <div className="text-sm text-slate-500">{review.role} · {review.year}</div>
-                      </div>
-                      <div className="rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                        {review.rating.toFixed(1)}
-                      </div>
-                    </div>
-                    <p className="mt-4 text-sm leading-7 text-slate-600">{review.comment}</p>
-                  </article>
-                ))}
-              </div>
+              <ReviewList reviews={college.reviews} slug={college.slug} />
+              <ReviewForm slug={college.slug} />
             </section>
           </article>
 
@@ -134,10 +122,15 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                 <p>Admissions exam: <span className="font-medium text-white">{college.exams.join(", ")}</span></p>
               </div>
               <div className="mt-6 flex flex-col gap-3">
-                <Link href="/compare" className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-950">
+                {college.websiteUrl && (
+                  <a href={college.websiteUrl} target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-amber-500 px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-amber-400">
+                    Visit Official Website
+                  </a>
+                )}
+                <Link href="/compare" className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
                   Compare colleges
                 </Link>
-                <Link href="/colleges" className="rounded-2xl border border-white/20 px-4 py-3 text-center text-sm font-semibold text-white">
+                <Link href="/colleges" className="rounded-2xl border border-white/20 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10">
                   Back to listings
                 </Link>
               </div>

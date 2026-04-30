@@ -27,6 +27,7 @@ export type College = {
   exams: string[];
   tags: string[];
   overview: string;
+  websiteUrl?: string | null;
   courses: CollegeCourse[];
   recruiters: string[];
   reviews: CollegeReview[];

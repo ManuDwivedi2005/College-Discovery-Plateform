@@ -58,23 +58,23 @@ export default async function Home() {
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_auto]">
             {filters.map((filter) => (
-              <button
+              <a
                 key={filter}
-                type="button"
+                href="/colleges"
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
               >
                 <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
                   Filter
                 </div>
                 <div>{filter}</div>
-              </button>
+              </a>
             ))}
-            <button
-              type="button"
-              className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800"
+            <a
+              href="/compare"
+              className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800 text-center flex items-center justify-center"
             >
               Compare selected
-            </button>
+            </a>
           </div>
         </header>
 

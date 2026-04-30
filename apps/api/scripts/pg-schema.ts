@@ -16,6 +16,8 @@ async function run() {
   try {
     console.log("Applying schema...");
     await client.query(`
+      DROP TABLE IF EXISTS users, otps, questions, answers, reviews, courses, colleges CASCADE;
+
       -- Create colleges table
       CREATE TABLE IF NOT EXISTS colleges (
         id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -34,6 +36,7 @@ async function run() {
         exams text[] NOT NULL DEFAULT '{}',
         tags text[] NOT NULL DEFAULT '{}',
         recruiters text[] NOT NULL DEFAULT '{}',
+        website_url text,
         created_at timestamp with time zone DEFAULT now(),
         updated_at timestamp with time zone DEFAULT now()
       );
@@ -65,6 +68,47 @@ async function run() {
       );
 
       CREATE INDEX IF NOT EXISTS idx_reviews_college_id ON reviews(college_id);
+
+      CREATE TABLE IF NOT EXISTS users (
+        id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        name text NOT NULL,
+        email text UNIQUE NOT NULL,
+        password_hash text NOT NULL,
+        role text NOT NULL DEFAULT 'student',
+        is_verified boolean NOT NULL DEFAULT false,
+        created_at timestamp with time zone DEFAULT now()
+      );
+
+      CREATE TABLE IF NOT EXISTS otps (
+        email text PRIMARY KEY,
+        otp text NOT NULL,
+        expires_at timestamp with time zone NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS questions (
+        id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title text NOT NULL,
+        content text NOT NULL,
+        created_at timestamp with time zone DEFAULT now()
+      );
+
+      CREATE TABLE IF NOT EXISTS answers (
+        id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        question_id bigint NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+        user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content text NOT NULL,
+        created_at timestamp with time zone DEFAULT now()
+      );
+
+      CREATE TABLE IF NOT EXISTS saved_colleges (
+        user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        college_id bigint NOT NULL REFERENCES colleges(id) ON DELETE CASCADE,
+        created_at timestamp with time zone DEFAULT now(),
+        PRIMARY KEY (user_id, college_id)
+      );
+
+      ALTER TABLE reviews ADD COLUMN IF NOT EXISTS user_id bigint REFERENCES users(id) ON DELETE SET NULL;
     `);
 
     console.log("Schema applied.");
