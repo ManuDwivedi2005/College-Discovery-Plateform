@@ -201,7 +201,10 @@ app.post("/auth/register", async (req, res) => {
         port: Number(process.env.SMTP_PORT) || 587,
         secure: process.env.SMTP_SECURE === "true",
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      });
+        // Force IPv4 explicitly at the socket connection layer
+        tls: { rejectUnauthorized: false },
+        family: 4,
+      } as any);
     } else {
       const testAccount = await nodemailer.createTestAccount();
       transporter = nodemailer.createTransport({
@@ -220,7 +223,7 @@ app.post("/auth/register", async (req, res) => {
     });
 
     if (!process.env.SMTP_USER) {
-      console.log("OTP Email sent. Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      console.log("OTP Email sent. Preview URL: %s", nodemailer.getTestMessageUrl(info as any));
     }
 
     res.json({ message: "OTP sent to email. Please verify." });
