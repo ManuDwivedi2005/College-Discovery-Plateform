@@ -11,8 +11,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [error, setError] = useState("");
-  const [step, setStep] = useState<"register" | "otp">("register");
-  const [otp, setOtp] = useState("");
   const { login } = useAuth();
   const router = useRouter();
 
@@ -27,50 +25,12 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registration failed");
-      setStep("otp");
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "OTP verification failed");
       login(data.data.user, data.data.token);
       router.push("/");
     } catch (err: any) {
       setError(err.message);
     }
   };
-
-  if (step === "otp") {
-    return (
-      <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 p-6">
-        <div className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_20px_80px_rgba(15,23,42,0.08)]">
-          <h1 className="text-2xl font-bold text-slate-900">Verify your email</h1>
-          <p className="mt-2 text-sm text-slate-600">Enter the OTP sent to {email}</p>
-          <form onSubmit={handleVerify} className="mt-8 space-y-5">
-            {error && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">OTP Code</label>
-              <input type="text" required value={otp} onChange={e => setOtp(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20" />
-            </div>
-            <button type="submit" className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800">
-              Verify OTP
-            </button>
-          </form>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 p-6">

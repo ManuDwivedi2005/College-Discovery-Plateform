@@ -15,7 +15,7 @@ College Discovery is a backend-first monorepo for browsing, filtering, comparing
 - **College listing**: Supports search, location/course/fees filters, and pagination.
 - **College details**: Shows courses, placements, reviews, and official website links.
 - **Compare page**: Compare up to 3 colleges side by side on fees, placement %, rating, and more.
-- **Authentication**: Secure OTP-based registration flow with granular User Roles (Student, Alumni, College Management, etc.).
+- **Authentication**: Secure JWT-based registration flow with granular User Roles (Student, Alumni, College Management, etc.).
 - **Discussion Q&A**: Active community forum where verified users can ask and answer queries.
 - **Institution Onboarding**: College Management personnel have exclusive access to register new colleges.
 

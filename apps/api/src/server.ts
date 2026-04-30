@@ -178,78 +178,27 @@ app.post("/auth/register", async (req, res) => {
     
     // Check if user exists
     const userRes = await query(`SELECT * FROM users WHERE email = $1`, [email]);
-    if (userRes.rows.length > 0) {
-      if (userRes.rows[0].is_verified) {
-        return res.status(400).json({ error: "Email already exists and is verified." });
-      } else {
-        // Update unverified user
-        await query(`UPDATE users SET name = $1, password_hash = $2, role = $3 WHERE email = $4`, [name, hash, role, email]);
-      }
-    } else {
-      await query(`INSERT INTO users (name, email, password_hash, role, is_verified) VALUES ($1, $2, $3, $4, false)`, [name, email, hash, role]);
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes
+    let user;
     
-    await query(`INSERT INTO otps (email, otp, expires_at) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET otp = $2, expires_at = $3`, [email, otp, expiresAt]);
-
-    let transporter;
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === "true",
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        // Force IPv4 explicitly at the socket connection layer
-        tls: { rejectUnauthorized: false },
-        family: 4,
-      } as any);
+    if (userRes.rows.length > 0) {
+      return res.status(400).json({ error: "Email already exists." });
     } else {
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass },
-      });
+      const result = await query(
+        `INSERT INTO users (name, email, password_hash, role, is_verified) VALUES ($1, $2, $3, $4, true) RETURNING id, name, email, role`,
+        [name, email, hash, role]
+      );
+      user = result.rows[0];
     }
 
-    const info = await transporter.sendMail({
-      from: '"College Discovery" <no-reply@collegediscovery.com>',
-      to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP code is ${otp}. It expires in 10 minutes.`,
-    });
-
-    if (!process.env.SMTP_USER) {
-      console.log("OTP Email sent. Preview URL: %s", nodemailer.getTestMessageUrl(info as any));
-    }
-
-    res.json({ message: "OTP sent to email. Please verify." });
+    const token = generateToken(user);
+    res.json({ data: { user, token } });
   } catch (err: any) {
     console.error(err);
     res.status(400).json({ error: err.message || "Invalid input" });
   }
 });
 
-app.post("/auth/verify-otp", async (req, res) => {
-  try {
-    const { email, otp } = z.object({ email: z.string().email(), otp: z.string() }).parse(req.body);
-    const otpRes = await query(`SELECT * FROM otps WHERE email = $1 AND otp = $2 AND expires_at > NOW()`, [email, otp]);
-    if (otpRes.rows.length === 0) return res.status(400).json({ error: "Invalid or expired OTP" });
 
-    await query(`UPDATE users SET is_verified = true WHERE email = $1`, [email]);
-    await query(`DELETE FROM otps WHERE email = $1`, [email]);
-
-    const userRes = await query(`SELECT id, name, email, role FROM users WHERE email = $1`, [email]);
-    const user = userRes.rows[0];
-    const token = generateToken(user);
-    res.json({ data: { user, token } });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message || "Invalid input" });
-  }
-});
 
 app.post("/auth/login", async (req, res) => {
   try {
@@ -258,9 +207,6 @@ app.post("/auth/login", async (req, res) => {
     const user = r.rows[0];
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.status(401).json({ error: "Invalid credentials" });
-    }
-    if (!user.is_verified) {
-      return res.status(403).json({ error: "Please verify your email via OTP before logging in." });
     }
     const token = generateToken({ id: user.id, email: user.email, name: user.name });
     res.json({ data: { user: { id: user.id, name: user.name, email: user.email }, token } });
