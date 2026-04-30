@@ -124,7 +124,7 @@ app.get("/colleges/:slug", async (req, res) => {
         ]);
         const mapped = toCamel(college);
         mapped.courses = coursesRes.rows.map((c) => toCamel(c));
-        mapped.reviews = reviewsRes.rows;
+        mapped.reviews = reviewsRes.rows.map((r) => toCamel(r));
         res.json({ data: mapped });
     }
     catch (err) {
