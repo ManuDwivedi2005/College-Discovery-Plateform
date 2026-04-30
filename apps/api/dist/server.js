@@ -8,6 +8,9 @@ import { query } from "./db.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { authenticateToken, generateToken } from "./auth.js";
+import dns from "dns";
+// Force IPv4 for external connections (Fixes Render ENETUNREACH IPv6 issue with Gmail SMTP)
+dns.setDefaultResultOrder('ipv4first');
 dotenv.config({ path: "./.env" });
 const app = express();
 app.use(helmet());
