@@ -10,7 +10,7 @@ export function ReviewList({ reviews, slug }: { reviews: any[], slug: string }) 
   const handleDelete = async (id: number) => {
     if (!token) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/colleges/${slug}/reviews/${id}`, {
+      const res = await fetch(`/api/colleges/${slug}/reviews/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` },
       });

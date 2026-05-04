@@ -15,7 +15,7 @@ export default function PredictorPage() {
     if (!rank) return;
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/predict?exam=${exam}&rank=${rank}`);
+      const res = await fetch(`/api/predict?exam=${exam}&rank=${rank}`);
       const data = await res.json();
       setResults(data.data || []);
     } catch (err) {

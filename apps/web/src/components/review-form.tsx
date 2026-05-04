@@ -25,7 +25,7 @@ export function ReviewForm({ slug }: { slug: string }) {
     if (!comment || !token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/colleges/${slug}/reviews`, {
+      const res = await fetch(`/api/colleges/${slug}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ rating, comment }),

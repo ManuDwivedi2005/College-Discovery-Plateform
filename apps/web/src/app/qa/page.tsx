@@ -16,7 +16,7 @@ export default function QAPage() {
 
   const fetchQA = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/qa`);
+      const res = await fetch(`/api/qa`);
       const data = await res.json();
       setQuestions(data.data || []);
     } catch (err) {
@@ -34,7 +34,7 @@ export default function QAPage() {
     if (!title || !content || !token) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/qa`, {
+      const res = await fetch(`/api/qa`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ title, content }),
@@ -54,7 +54,7 @@ export default function QAPage() {
     e.preventDefault();
     if (!replyContent || !token) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/qa/${questionId}/answers`, {
+      const res = await fetch(`/api/qa/${questionId}/answers`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ content: replyContent }),
@@ -72,7 +72,7 @@ export default function QAPage() {
   const handleDeleteQuestion = async (id: number) => {
     if (!token) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/qa/${id}`, {
+      const res = await fetch(`/api/qa/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` },
       });
@@ -85,7 +85,7 @@ export default function QAPage() {
   const handleDeleteAnswer = async (id: number) => {
     if (!token) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/qa/answers/${id}`, {
+      const res = await fetch(`/api/qa/answers/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` },
       });

@@ -1,9 +1,9 @@
 import type { College, CollegeQuery } from "@college/shared";
 
-const apiBaseUrl =
-  process.env.COLLEGE_API_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000";
+const isServer = typeof window === "undefined";
+const apiBaseUrl = isServer
+  ? "http://localhost:4001"
+  : "/api";
 
 type CollegeListResponse = {
   data: College[];
